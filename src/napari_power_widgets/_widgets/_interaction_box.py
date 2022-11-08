@@ -82,8 +82,8 @@ class BoxSelector(Container):
             if x1 is None:
                 raise ValueError("X slice must have a stop value")
             xval = (x0, x1)
-        self._yrange.value = yval
-        self._xrange.value = xval
+        self._yrange.value = sorted(yval)
+        self._xrange.value = sorted(xval)
 
     @property
     def mode(self) -> Mode:
@@ -108,6 +108,7 @@ class BoxSelector(Container):
             self._layer_states.append((layer, layer.interactive))
             layer.interactive = False
 
+        viewer.overlays.interaction_box.points = None
         viewer.overlays.interaction_box.show = True
         viewer.mouse_drag_callbacks.append(self._on_drag)
 
@@ -124,7 +125,6 @@ class BoxSelector(Container):
         viewer.mouse_drag_callbacks.remove(self._on_drag)
         for layer, interactive in self._layer_states:
             layer.interactive = interactive
-        viewer.overlays.interaction_box.show = False
         self._current_viewer = None
         self._layer_states.clear()
         self._btn.text = "Select"
@@ -226,8 +226,8 @@ class BoxSliceSelector(BoxSelector):
         else:
             x0, x1 = xval
             xval = (int(np.ceil(x0)), int(x1))
-        self._yrange.value = yval
-        self._xrange.value = xval
+        self._yrange.value = sorted(yval)
+        self._xrange.value = sorted(xval)
 
     def _setup_container(self, xlim, ylim):
         if xlim is None:
