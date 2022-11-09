@@ -139,6 +139,7 @@ class BoxSelector(Container):
                 viewer.overlays.interaction_box.points = np.stack(
                     [pos0, pos1], axis=0
                 )
+                self.value = (pos0, pos1)
                 yield
         finally:
             self.mode = Mode.idle

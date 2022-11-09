@@ -9,6 +9,12 @@
 
 Powerful widgets and type annotations for napari plugin widgets.
 
+### Major Widgets
+
+##### BoxSelector
+
+
+
 ----------------------------------
 
 This [napari] plugin was generated with [Cookiecutter] using [@napari]'s [cookiecutter-napari-plugin] template.
