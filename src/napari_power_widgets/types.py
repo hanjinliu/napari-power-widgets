@@ -5,7 +5,7 @@ from magicgui import register_type
 
 from . import _widgets as wdt
 
-__all__ = ["BoxSelection", "BoxSlices", "ShapeType"]
+__all__ = ["BoxSelection", "FeatureColumn", "ShapeType", "Coordinate"]
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -16,9 +16,8 @@ else:
     _DataFrame = NewType("_DataFrame", Any)
     _Series = NewType("_Series", Any)
 
-BoxSelection = NewType(
-    "BoxSelection", Tuple[Tuple[float, float], Tuple[float, float]]
-)
+# fmt: off
+BoxSelection = NewType("BoxSelection", Tuple[Tuple[float, float], Tuple[float, float]])  # noqa
 BoxSelection.__doc__ = """
 Alias of ((float, float), (float, float)) for a box selection.
 
@@ -38,24 +37,24 @@ Examples
 register_type(BoxSelection, widget_type=wdt.BoxSelector)
 
 
-BoxSlices = NewType("BoxSlices", Tuple[slice, slice])
-BoxSlices.__doc__ = """
-Alias of (slice, slice) for the 2D box selection in a napari viewer.
+# BoxSlices = NewType("BoxSlices", Tuple[slice, slice])
+# BoxSlices.__doc__ = """
+# Alias of (slice, slice) for the 2D box selection in a napari viewer.
 
-Unlike `BoxSelection`, this type can directly used for image slicing.
+# Unlike `BoxSelection`, this type can directly used for image slicing.
 
-Examples
---------
->>> from napari_power_widgets.types import BoxSlices
->>> from napari.layers import Image
->>> from magicgui import magicgui
->>> # create a magicgui widget
->>> @magicgui
->>> def crop_image(image: Image, sl: BoxSlices) -> Image:
->>>     arr = image.data
->>>     return Image(arr[sl])
-"""
-register_type(BoxSlices, widget_type=wdt.BoxSliceSelector)
+# Examples
+# --------
+# >>> from napari_power_widgets.types import BoxSlices
+# >>> from napari.layers import Image
+# >>> from magicgui import magicgui
+# >>> # create a magicgui widget
+# >>> @magicgui
+# >>> def crop_image(image: Image, sl: BoxSlices) -> Image:
+# >>>     arr = image.data
+# >>>     return Image(arr[sl])
+# """
+# register_type(BoxSlices, widget_type=wdt.BoxSliceSelector)
 
 FeatureColumn = NewType("FeatureColumn", _Series)
 FeatureColumn.__doc__ = """
@@ -75,27 +74,21 @@ Examples
 >>>     plt.plot(column)
 >>>     plt.show()
 """
+
 register_type(FeatureColumn, widget_type=wdt.ColumnChoice)
 
 
 class ShapeType:
     """Avaliable annotations for one of the layer's shape types."""
 
-    __fields__ = (
-        "ANY",
-        "LINE",
-        "POLYGON",
-        "RECTANGLE",
-        "ELLIPSE",
-        "PATH",
-    )
+    __fields__ = ("Any", "Line", "Polygon", "Rectangle", "Ellipse", "Path")  # noqa
 
-    ANY = NewType("ANY", np.ndarray)
-    LINE = NewType("LINE", np.ndarray)
-    ELLIPSE = NewType("ELLIPSE", np.ndarray)
-    RECTANGLE = NewType("RECTANGLE", np.ndarray)
-    POLYGON = NewType("POLYGON", np.ndarray)
-    PATH = NewType("PATH", np.ndarray)
+    Any = NewType("Any", np.ndarray)
+    Line = NewType("Line", np.ndarray)
+    Ellipse = NewType("Ellipse", np.ndarray)
+    Rectangle = NewType("Rectangle", np.ndarray)
+    Polygon = NewType("Polygon", np.ndarray)
+    Path = NewType("Path", np.ndarray)
 
 
 for name in ShapeType.__fields__:
@@ -113,12 +106,12 @@ for name in ShapeType.__fields__:
     >>>     print(shape)
     """
 
-register_type(ShapeType.ANY, widget_type=wdt.ShapeComboBox)
-register_type(ShapeType.LINE, widget_type=wdt.LineShapeComboBox)
-register_type(ShapeType.ELLIPSE, widget_type=wdt.EllipseShapeComboBox)
-register_type(ShapeType.RECTANGLE, widget_type=wdt.RectangleShapeComboBox)
-register_type(ShapeType.POLYGON, widget_type=wdt.PolygonShapeComboBox)
-register_type(ShapeType.PATH, widget_type=wdt.PathShapeComboBox)
+register_type(ShapeType.Any, widget_type=wdt.ShapeComboBox)
+register_type(ShapeType.Line, widget_type=wdt.ShapeComboBox, options={"filter": "line"})  # noqa
+register_type(ShapeType.Ellipse, widget_type=wdt.ShapeComboBox, options={"filter": "ellipse"})  # noqa
+register_type(ShapeType.Rectangle, widget_type=wdt.ShapeComboBox, options={"filter": "rectangle"})  # noqa
+register_type(ShapeType.Polygon, widget_type=wdt.ShapeComboBox, options={"filter": "polygon"})  # noqa
+register_type(ShapeType.Path, widget_type=wdt.ShapeComboBox, options={"filter": "path"})  # noqa
 
 Coordinate = NewType("Coordinate", np.ndarray)
 Coordinate.__doc__ = """

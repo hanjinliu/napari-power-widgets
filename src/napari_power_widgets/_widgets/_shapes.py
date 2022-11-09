@@ -20,8 +20,12 @@ class ShapeComboBox(Container):
         self,
         value=UNSET,
         nullable=False,
+        filter: list[str] | None = None,
         **kwargs,
     ):
+        if filter is None:
+            filter = ["line", "polygon", "rectangle", "ellipse", "path"]
+        self._filter = filter
         self._layer_cbox = ComboBox(choices=_get_shapes_layer, nullable=False)
         self._shape_cbox = ComboBox(
             choices=self._get_available_shape_id, nullable=False
@@ -55,7 +59,7 @@ class ShapeComboBox(Container):
         return self._event_connected_layer
 
     def _shape_filter(self, i: int, type: str) -> bool:
-        return True
+        return type in self._filter
 
     def _get_available_shape_id(self, w: CategoricalWidget):
         layer: Shapes = self._layer_cbox.value
@@ -89,28 +93,3 @@ class ShapeComboBox(Container):
         self._event_connected_layer = weakref.ref(layer)
         layer.events.data.connect(self._shape_cbox.reset_choices)
         return None
-
-
-class LineShapeComboBox(ShapeComboBox):
-    def _shape_filter(self, i: int, type: str) -> bool:
-        return type == "line"
-
-
-class RectangleShapeComboBox(ShapeComboBox):
-    def _shape_filter(self, i: int, type: str) -> bool:
-        return type == "rectangle"
-
-
-class EllipseShapeComboBox(ShapeComboBox):
-    def _shape_filter(self, i: int, type: str) -> bool:
-        return type == "ellipse"
-
-
-class PathShapeComboBox(ShapeComboBox):
-    def _shape_filter(self, i: int, type: str) -> bool:
-        return type == "path"
-
-
-class PolygonShapeComboBox(ShapeComboBox):
-    def _shape_filter(self, i: int, type: str) -> bool:
-        return type == "polygon"
