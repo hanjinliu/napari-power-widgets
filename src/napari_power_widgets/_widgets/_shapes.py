@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-
+import weakref
 from napari.layers import Shapes
 from napari.utils._magicgui import find_viewer_ancestor
 import numpy as np
@@ -31,8 +31,10 @@ class ShapeComboBox(Container):
         )
         self._layer_cbox.changed.disconnect()
         self._shape_cbox.changed.disconnect()
-        self._layer_cbox.changed.connect(self._shape_cbox.reset_choices)
+        self._layer_cbox.changed.connect(self._layer_changed)
         self._shape_cbox.changed.connect(self._focus_on_selected_shape)
+
+        self._event_connected_layer: weakref.ReferenceType[Shapes] = None
         self.value = value
 
     @property
@@ -46,6 +48,11 @@ class ShapeComboBox(Container):
             return
         self._layer_cbox.value = shape[0]
         self._shape_cbox.value = shape[1]
+
+    def _get_event_connected_layer(self) -> Shapes | None:
+        if self._event_connected_layer is None:
+            return None
+        return self._event_connected_layer
 
     def _shape_filter(self, i: int, type: str) -> bool:
         return True
@@ -69,6 +76,19 @@ class ShapeComboBox(Container):
             center = np.mean(data[:, :-2], axis=0)
             viewer = find_viewer_ancestor(self)
             viewer.dims.set_current_step(range(ndim - 2), center[0])
+
+    def _layer_changed(self, layer: Shapes):
+        self._shape_cbox.reset_choices()
+        if old_layer := self._get_event_connected_layer():
+            try:
+                old_layer.events.data.disconnect(
+                    self._shape_cbox.reset_choices
+                )
+            except Exception:
+                pass
+        self._event_connected_layer = weakref.ref(layer)
+        layer.events.data.connect(self._shape_cbox.reset_choices)
+        return None
 
 
 class LineShapeComboBox(ShapeComboBox):

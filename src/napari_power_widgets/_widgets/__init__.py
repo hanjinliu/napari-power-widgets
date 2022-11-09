@@ -1,4 +1,4 @@
-from ._interaction_box import BoxSelector, BoxSliceSelector
+from ._mouse import BoxSelector, BoxSliceSelector, CoordinateSelector
 from ._features import ColumnChoice
 from ._shapes import (
     ShapeComboBox,
@@ -19,4 +19,5 @@ __all__ = [
     "RectangleShapeComboBox",
     "PolygonShapeComboBox",
     "PathShapeComboBox",
+    "CoordinateSelector",
 ]

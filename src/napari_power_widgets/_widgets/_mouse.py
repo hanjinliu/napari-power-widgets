@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING, Union
 
 import napari
 import numpy as np
-from magicgui.widgets import Container, PushButton, TupleEdit
+from magicgui.widgets import Container, PushButton, TupleEdit, FloatSpinBox
 from magicgui.widgets._bases.value_widget import UNSET
 
 from ._typing import MouseEvent
@@ -28,22 +28,58 @@ class Mode(Enum):
             return Mode.idle
 
 
-class BoxSelector(Container):
+class _MouseInteractivityMixin:
+    @property
+    def mode(self) -> Mode:
+        return self._mode
+
+    @mode.setter
+    def mode(self, mode: Mode | str):
+        mode = Mode(mode)
+        self._mode = mode
+        if mode is Mode.idle:
+            self._deactivate()
+        elif mode is Mode.selecting:
+            self._activate()
+        else:
+            raise RuntimeError(f"Unreachable: {mode}")
+
+    def _activate(self):
+        raise NotImplementedError()
+
+    def _deactivate(self):
+        raise NotImplementedError()
+
+    def _switch_mode(self):
+        """Switch the interactivity mode."""
+        self.mode = self.mode.switched()
+
+    def _freeze_layers(self, viewer: napari.Viewer):
+        self._current_viewer = viewer
+        self._layer_states: list[tuple[Layer, bool]] = []
+        for layer in viewer.layers.selection:
+            self._layer_states.append((layer, layer.interactive))
+            layer.interactive = False
+
+    def _unfreeze_layers(self):
+        for layer, interactive in self._layer_states:
+            layer.interactive = interactive
+        self._current_viewer = None
+        self._layer_states.clear()
+
+
+class BoxSelector(Container, _MouseInteractivityMixin):
     def __init__(
         self,
         value: tuple[_RangeLike, _RangeLike] = UNSET,
-        xlim: tuple[float, float] | None = None,
-        ylim: tuple[float, float] | None = None,
         nullable: bool = False,
         **kwargs,
     ):
-        self._setup_container(xlim, ylim)
+        self._setup_container()
         self._btn = PushButton(
             text="Select", tooltip="Get selection from viewer"
         )
 
-        self._current_viewer: napari.Viewer | None = None
-        self._layer_states: list[tuple[Layer, bool]] = []
         self._mode = Mode.idle
 
         super().__init__(
@@ -85,29 +121,10 @@ class BoxSelector(Container):
         self._yrange.value = sorted(yval)
         self._xrange.value = sorted(xval)
 
-    @property
-    def mode(self) -> Mode:
-        return self._mode
-
-    @mode.setter
-    def mode(self, mode: Mode | str):
-        mode = Mode(mode)
-        self._mode = mode
-        if mode is Mode.idle:
-            self._deactivate()
-        elif mode is Mode.selecting:
-            self._activate()
-        else:
-            raise RuntimeError(f"Unreachable: {mode}")
-
     def _activate(self):
         self._btn.text = "..."
         viewer = napari.current_viewer()
-        self._current_viewer = viewer
-        for layer in viewer.layers.selection:
-            self._layer_states.append((layer, layer.interactive))
-            layer.interactive = False
-
+        self._freeze_layers(viewer)
         viewer.overlays.interaction_box.points = None
         viewer.overlays.interaction_box.show = True
         viewer.mouse_drag_callbacks.append(self._on_drag)
@@ -123,10 +140,7 @@ class BoxSelector(Container):
         )
 
         viewer.mouse_drag_callbacks.remove(self._on_drag)
-        for layer, interactive in self._layer_states:
-            layer.interactive = interactive
-        self._current_viewer = None
-        self._layer_states.clear()
+        self._unfreeze_layers()
         self._btn.text = "Select"
 
     def _on_drag(self, viewer: napari.Viewer, event: MouseEvent):
@@ -144,23 +158,15 @@ class BoxSelector(Container):
         finally:
             self.mode = Mode.idle
 
-    def _on_button_clicked(self):
-        self.mode = self.mode.switched()
-
-    def _setup_container(self, xlim, ylim):
-        if xlim is None:
-            xlim = (0.0, 10000.0)
-        if ylim is None:
-            ylim = (0.0, 10000.0)
-
+    def _setup_container(self):
         self._xrange = TupleEdit(
-            (xlim[0], xlim[0]),
-            options={"min": xlim[0], "max": xlim[1]},
+            (0.0, 0.0),
+            options={"min": -1e6, "max": 1e6},
             label="X",
         )
         self._yrange = TupleEdit(
-            (ylim[0], ylim[0]),
-            options={"min": ylim[0], "max": ylim[1]},
+            (0.0, 0.0),
+            options={"min": -1e6, "max": 1e6},
             label="Y",
         )
         range_container = Container(
@@ -179,7 +185,7 @@ class BoxSelector(Container):
         self._range_container.changed.connect(
             lambda: self.changed.emit(self.value)
         )
-        self._btn.changed.connect(self._on_button_clicked)
+        self._btn.changed.connect(self._switch_mode)
 
         return None
 
@@ -230,20 +236,15 @@ class BoxSliceSelector(BoxSelector):
         self._yrange.value = sorted(yval)
         self._xrange.value = sorted(xval)
 
-    def _setup_container(self, xlim, ylim):
-        if xlim is None:
-            xlim = (0, 10000)
-        if ylim is None:
-            ylim = (0, 10000)
-
+    def _setup_container(self):
         self._xrange = TupleEdit(
-            (xlim[0], xlim[0]),
-            options={"min": xlim[0], "max": xlim[1]},
+            (0, 0),
+            options={"min": -1e6, "max": 1e6},
             label="X",
         )
         self._yrange = TupleEdit(
-            (ylim[0], ylim[0]),
-            options={"min": ylim[0], "max": ylim[1]},
+            (0, 0),
+            options={"min": -1e6, "max": 1e6},
             label="Y",
         )
         range_container = Container(
@@ -252,3 +253,80 @@ class BoxSliceSelector(BoxSelector):
         range_container.margins = (0, 0, 0, 0)
         self._range_container = range_container
         return None
+
+
+class CoordinateSelector(Container, _MouseInteractivityMixin):
+    def __init__(
+        self,
+        value: tuple[_RangeLike, _RangeLike] = UNSET,
+        nullable: bool = False,
+        **kwargs,
+    ):
+        self._xpos = FloatSpinBox(value=0.0, label="X", min=-1e6, max=1e6)
+        self._ypos = FloatSpinBox(value=0.0, label="Y", min=-1e6, max=1e6)
+        self._btn = PushButton(
+            text="Select", tooltip="Get a point from viewer"
+        )
+
+        self._mode = Mode.idle
+
+        super().__init__(
+            layout="horizontal",
+            widgets=[self._xpos, self._ypos, self._btn],
+            **kwargs,
+        )
+
+        self.value = value
+        self._xpos.changed.disconnect()
+        self._ypos.changed.disconnect()
+        self._btn.changed.disconnect()
+
+        self._btn.changed.connect(self._switch_mode)
+        self._xpos.changed.connect(lambda: self.changed.emit(self.value))
+        self._ypos.changed.connect(lambda: self.changed.emit(self.value))
+
+    @property
+    def value(self) -> np.ndarray:
+        return np.array([self._ypos.value, self._xpos.value], dtype=np.float64)
+
+    @value.setter
+    def value(self, pos):
+        if pos is UNSET:
+            return
+        self._ypos.value, self._xpos.value = pos
+
+    def _activate(self):
+        self._btn.text = "..."
+        viewer = napari.current_viewer()
+        viewer.overlays.interaction_box.show = False
+        self._freeze_layers(viewer)
+        viewer.mouse_drag_callbacks.append(self._on_click)
+
+    def _deactivate(self):
+        viewer = self._current_viewer
+        viewer.mouse_drag_callbacks.remove(self._on_click)
+        self._unfreeze_layers()
+        self._btn.text = "Select"
+
+    def _on_click(self, viewer: napari.Viewer, event: MouseEvent):
+        init = True
+        try:
+            pos0 = event.position
+            px0 = event.pos
+            yield
+            while event.type == "mouse_move":
+                yield  # do nothing
+            px1 = event.pos
+            if np.sum(px0 - px1) < 2:
+                self.value = pos0
+                viewer.overlays.interaction_box.show = True
+                viewer.overlays.interaction_box.points = pos0
+            else:
+                init = False
+        finally:
+            if init:
+                self.mode = Mode.idle
+
+
+class MultiPointSelector(CoordinateSelector):
+    ...

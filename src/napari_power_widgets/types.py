@@ -1,7 +1,7 @@
 from typing import NewType, Tuple, Any, TYPE_CHECKING
 
+import numpy as np
 from magicgui import register_type
-from napari.types import ShapesData
 
 from . import _widgets as wdt
 
@@ -69,7 +69,7 @@ Examples
 >>> from napari_power_widgets.types import FeatureColumn
 >>> import matplotlib.pyplot as plt
 >>> from magicgui import magicgui
->>> # create a magicgui widget
+>>>
 >>> @magicgui
 >>> def plot_feature(column: FeatureColumn):
 >>>     plt.plot(column)
@@ -79,9 +79,10 @@ register_type(FeatureColumn, widget_type=wdt.ColumnChoice)
 
 
 class ShapeType:
-    __slots__ = (
+    """Avaliable annotations for one of the layer's shape types."""
+
+    __fields__ = (
         "ANY",
-        "POINT",
         "LINE",
         "POLYGON",
         "RECTANGLE",
@@ -89,15 +90,15 @@ class ShapeType:
         "PATH",
     )
 
-    ANY = NewType("ANY", ShapesData)
-    LINE = NewType("LINE", ShapesData)
-    ELLIPSIS = NewType("ELLIPSIS", ShapesData)
-    RECTANGLE = NewType("RECTANGLE", ShapesData)
-    POLYGON = NewType("POLYGON", ShapesData)
-    PATH = NewType("PATH", ShapesData)
+    ANY = NewType("ANY", np.ndarray)
+    LINE = NewType("LINE", np.ndarray)
+    ELLIPSE = NewType("ELLIPSE", np.ndarray)
+    RECTANGLE = NewType("RECTANGLE", np.ndarray)
+    POLYGON = NewType("POLYGON", np.ndarray)
+    PATH = NewType("PATH", np.ndarray)
 
 
-for name in ShapeType.__slots__:
+for name in ShapeType.__fields__:
     _type = getattr(ShapeType, name)
     _type.__doc__ = f"""
     Alias of numpy.ndarray for a {name.title()!r} shape data.
@@ -114,7 +115,23 @@ for name in ShapeType.__slots__:
 
 register_type(ShapeType.ANY, widget_type=wdt.ShapeComboBox)
 register_type(ShapeType.LINE, widget_type=wdt.LineShapeComboBox)
-register_type(ShapeType.ELLIPSIS, widget_type=wdt.EllipseShapeComboBox)
+register_type(ShapeType.ELLIPSE, widget_type=wdt.EllipseShapeComboBox)
 register_type(ShapeType.RECTANGLE, widget_type=wdt.RectangleShapeComboBox)
 register_type(ShapeType.POLYGON, widget_type=wdt.PolygonShapeComboBox)
 register_type(ShapeType.PATH, widget_type=wdt.PathShapeComboBox)
+
+Coordinate = NewType("Coordinate", np.ndarray)
+Coordinate.__doc__ = """
+Alias of numpy.ndarray of shape (2,) for a physical point coordinate.
+
+Examples
+--------
+>>> from napari_power_widgets.types import Coordinate
+>>> from magicgui import magicgui
+>>>
+>>> @magicgui
+>>> def measure_distance(pos0: Coordinate, pos1: Coordinate):
+>>>     return np.sqrt(np.sum((pos0 - pos1)**2))
+"""
+
+register_type(Coordinate, widget_type=wdt.CoordinateSelector)
