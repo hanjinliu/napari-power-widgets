@@ -24,10 +24,12 @@ class BoxSelector(Container, MouseInteractivityMixin):
     def __init__(
         self,
         value: tuple[_RangeLike, _RangeLike] = UNSET,
+        ordered: bool = True,
         nullable: bool = False,
         **kwargs,
     ):
         self._setup_container()
+        self._ordered = ordered
         self._btn = PushButton(
             text="Select", tooltip="Get a box selection from the viewer"
         )
@@ -43,6 +45,11 @@ class BoxSelector(Container, MouseInteractivityMixin):
         self.value = value
 
         self._init_signals()
+
+    @property
+    def ordered(self) -> bool:
+        """True if the range is ordered."""
+        return self._ordered
 
     @property
     def value(self) -> BoxRange:
@@ -70,8 +77,12 @@ class BoxSelector(Container, MouseInteractivityMixin):
             if x1 is None:
                 raise ValueError("X slice must have a stop value")
             xval = (x0, x1)
-        self._yrange.value = sorted(yval)
-        self._xrange.value = sorted(xval)
+
+        if self._ordered:
+            yval = sorted(yval)
+            xval = sorted(xval)
+        self._yrange.value = yval
+        self._xrange.value = xval
 
     def _activate(self):
         self._btn.text = "..."
@@ -79,6 +90,7 @@ class BoxSelector(Container, MouseInteractivityMixin):
         self._freeze_layers(viewer)
         viewer.overlays.interaction_box.points = None
         viewer.overlays.interaction_box.show = True
+        viewer.cursor.style = "cross"
         viewer.mouse_drag_callbacks.append(self._on_drag)
 
     def _deactivate(self):
@@ -90,7 +102,7 @@ class BoxSelector(Container, MouseInteractivityMixin):
             (points[0, 0], points[1, 0]),
             (points[0, 1], points[1, 1]),
         )
-
+        viewer.cursor.style = "standard"
         viewer.mouse_drag_callbacks.remove(self._on_drag)
         self._unfreeze_layers()
         self._btn.text = "Select"

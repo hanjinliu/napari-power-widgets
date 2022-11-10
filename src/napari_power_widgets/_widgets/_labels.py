@@ -19,17 +19,14 @@ def _get_labels_layer(w: CategoricalWidget):
     return []
 
 
+# TODO
 class LabelComboBox(Container, MouseInteractivityMixin):
     def __init__(
         self,
         value=UNSET,
         nullable=False,
-        filter: list[str] | None = None,
         **kwargs,
     ):
-        if filter is None:
-            filter = ["line", "polygon", "rectangle", "ellipse", "path"]
-        self._filter = filter
         self._layer_cbox = ComboBox(choices=_get_labels_layer, nullable=False)
         self._index_cbox = SpinBox(0, max=1e6, step=1)
         self._btn = PushButton(text="Select")
@@ -112,8 +109,7 @@ class LabelComboBox(Container, MouseInteractivityMixin):
             px1 = event.pos
             if np.sum(px0 - px1) < 2:
                 self.value = pos0
-                viewer.overlays.interaction_box.show = True
-                viewer.overlays.interaction_box.points = pos0
+
             else:
                 init = False
         finally:

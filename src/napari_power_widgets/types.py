@@ -128,3 +128,9 @@ Examples
 """
 
 register_type(Coordinate, widget_type=wdt.CoordinateSelector)
+
+ZStep = NewType("ZStep", int)
+register_type(ZStep, widget_type=wdt.ZStepSpinBox)
+
+ZRange = NewType("ZRange", Tuple[int, int])
+register_type(ZRange, widget_type=wdt.ZRangeEdit)
