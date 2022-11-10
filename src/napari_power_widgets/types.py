@@ -5,22 +5,12 @@ from magicgui import register_type
 
 from . import _widgets as wdt
 
-__all__ = [
-    "BoxSelection",
-    "FeatureColumn",
-    "ShapeOf",
-    "ShapesOf",
-    "Coordinate",
-    "ZStep",
-    "ZRange",
-]
-
 if TYPE_CHECKING:
     import pandas as pd
 
     _Series = pd.Series
 else:
-    _Series = NewType("_Series", Any)
+    _Series = Any
 
 # fmt: off
 BoxSelection = NewType("BoxSelection", Tuple[Tuple[float, float], Tuple[float, float]])  # noqa
@@ -84,32 +74,26 @@ Examples
 register_type(FeatureColumn, widget_type=wdt.ColumnChoice)
 
 
-class ShapeOf:
-    """Avaliable annotations for one of the layer's shapes."""
+OneOfShapes = NewType("OneOfShapes", np.ndarray)
+OneOfLines = NewType("OneOfLines", np.ndarray)
+OneOfEllipses = NewType("OneOfEllipses", np.ndarray)
+OneOfRectangles = NewType("OneOfRectangles", np.ndarray)
+OneOfPolygons = NewType("OneOfPolygons", np.ndarray)
+OneOfPaths = NewType("OneOfPaths", np.ndarray)
 
-    __fields__ = ("Any", "Line", "Polygon", "Rectangle", "Ellipse", "Path")  # noqa
+_OneOfs = [OneOfShapes, OneOfLines, OneOfEllipses, OneOfRectangles, OneOfPolygons, OneOfPaths]  # noqa
 
-    Any = NewType("Any", np.ndarray)
-    Line = NewType("Line", np.ndarray)
-    Ellipse = NewType("Ellipse", np.ndarray)
-    Rectangle = NewType("Rectangle", np.ndarray)
-    Polygon = NewType("Polygon", np.ndarray)
-    Path = NewType("Path", np.ndarray)
+SomeOfShapes = NewType("SomeOfShapes", List[np.ndarray])
+SomeOfLines = NewType("SomeOfLines", List[np.ndarray])
+SomeOfEllipses = NewType("SomeOfEllipses", List[np.ndarray])
+SomeOfRectangles = NewType("SomeOfRectangles", List[np.ndarray])
+SomeOfPolygons = NewType("SomeOfPolygons", List[np.ndarray])
+SomeOfPaths = NewType("SomeOfPaths", List[np.ndarray])
 
+_SomeOfs = [SomeOfShapes, SomeOfLines, SomeOfEllipses, SomeOfRectangles, SomeOfPolygons, SomeOfPaths]  # noqa
 
-class ShapesOf(ShapeOf):
-    """Avaliable annotations for some of the layer's shapes."""
-
-    Any = NewType("Any", List[np.ndarray])
-    Line = NewType("Line", List[np.ndarray])
-    Ellipse = NewType("Ellipse", List[np.ndarray])
-    Rectangle = NewType("Rectangle", List[np.ndarray])
-    Polygon = NewType("Polygon", List[np.ndarray])
-    Path = NewType("Path", List[np.ndarray])
-
-
-_TEMPLATE = """
-Alias of a list of numpy.ndarray for {name!r} shape data.
+_TEMPLATE_ONEOF = """
+Alias of a list of numpy.ndarray for shape data.
 
 Examples
 --------
@@ -117,30 +101,41 @@ Examples
 >>> from magicgui import magicgui
 >>> # create a magicgui widget
 >>> @magicgui
->>> def print_shape_coordinates(shape: {type_name}.{name}):
+>>> def print_shape_coordinates(shape: {type_name}):
 >>>     print(shape)
 """
 
-for name in ShapeOf.__fields__:
-    _type = getattr(ShapesOf, name)
-    _type.__doc__ = _TEMPLATE.format(name=name, type_name=_type.__name__)
+_TEMPLATE_SOMEOF = """
+Alias of a list of numpy.ndarray for a set of shape data.
 
-    _type = getattr(ShapesOf, name)
-    _type.__doc__ = _TEMPLATE.format(name=name, type_name=_type.__name__)
+Examples
+--------
+>>> from napari_power_widgets.types import {type_name}
+>>> from magicgui import magicgui
+>>> # create a magicgui widget
+>>> @magicgui
+>>> def print_shape_coordinates(shape: {type_name}):
+>>>     print(shape)
+"""
 
-register_type(ShapeOf.Any, widget_type=wdt.ShapeComboBox)
-register_type(ShapeOf.Line, widget_type=wdt.ShapeComboBox, filter="line")  # noqa
-register_type(ShapeOf.Ellipse, widget_type=wdt.ShapeComboBox, filter="ellipse")  # noqa
-register_type(ShapeOf.Rectangle, widget_type=wdt.ShapeComboBox, filter="rectangle")  # noqa
-register_type(ShapeOf.Polygon, widget_type=wdt.ShapeComboBox, filter="polygon")  # noqa
-register_type(ShapeOf.Path, widget_type=wdt.ShapeComboBox, filter="path")  # noqa
+for _type in _OneOfs:
+    _type.__doc__ = _TEMPLATE_ONEOF.format(type_name=_type.__name__)
+for _type in _SomeOfs:
+    _type.__doc__ = _TEMPLATE_SOMEOF.format(type_name=_type.__name__)
 
-register_type(ShapesOf.Any, widget_type=wdt.ShapeSelect)
-register_type(ShapesOf.Line, widget_type=wdt.ShapeSelect, filter="line")  # noqa
-register_type(ShapesOf.Ellipse, widget_type=wdt.ShapeSelect, filter="ellipse")  # noqa
-register_type(ShapesOf.Rectangle, widget_type=wdt.ShapeSelect, filter="rectangle")  # noqa
-register_type(ShapesOf.Polygon, widget_type=wdt.ShapeSelect, filter="polygon")  # noqa
-register_type(ShapesOf.Path, widget_type=wdt.ShapeSelect, filter="path")  # noqa
+register_type(OneOfShapes, widget_type=wdt.ShapeComboBox)
+register_type(OneOfLines, widget_type=wdt.ShapeComboBox, filter="line")  # noqa
+register_type(OneOfEllipses, widget_type=wdt.ShapeComboBox, filter="ellipse")  # noqa
+register_type(OneOfRectangles, widget_type=wdt.ShapeComboBox, filter="rectangle")  # noqa
+register_type(OneOfPolygons, widget_type=wdt.ShapeComboBox, filter="polygon")  # noqa
+register_type(OneOfPaths, widget_type=wdt.ShapeComboBox, filter="path")  # noqa
+
+register_type(SomeOfShapes, widget_type=wdt.ShapeSelect)
+register_type(SomeOfLines, widget_type=wdt.ShapeSelect, filter="line")  # noqa
+register_type(SomeOfEllipses, widget_type=wdt.ShapeSelect, filter="ellipse")  # noqa
+register_type(SomeOfRectangles, widget_type=wdt.ShapeSelect, filter="rectangle")  # noqa
+register_type(SomeOfPolygons, widget_type=wdt.ShapeSelect, filter="polygon")  # noqa
+register_type(SomeOfPaths, widget_type=wdt.ShapeSelect, filter="path")  # noqa
 
 Coordinate = NewType("Coordinate", np.ndarray)
 Coordinate.__doc__ = """
@@ -195,4 +190,15 @@ Examples
 """
 register_type(ZRange, widget_type=wdt.ZRangeEdit)
 
+LineData = NewType("LineData", np.ndarray)
+RectangleData = NewType("RectangleData", np.ndarray)
+PathData = NewType("PathData", np.ndarray)
+PolygonData = NewType("PolygonData", np.ndarray)
+
+register_type(LineData, widget_type=wdt.LineDataEdit)
+register_type(RectangleData, widget_type=wdt.RectangleDataEdit)
+register_type(PathData, widget_type=wdt.PathDataEdit)
+register_type(PolygonData, widget_type=wdt.PolygonDataEdit)
+
+# delete all the variables that are not needed
 del NewType, Tuple, List, Any, TYPE_CHECKING, np, register_type, wdt

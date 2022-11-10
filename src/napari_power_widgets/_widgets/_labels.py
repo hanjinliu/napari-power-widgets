@@ -1,7 +1,6 @@
 from __future__ import annotations
 
-from napari.layers import Labels
-from napari.utils._magicgui import find_viewer_ancestor
+from typing import TYPE_CHECKING
 import numpy as np
 from magicgui import application as app
 from magicgui.widgets import Container, ComboBox, Label, SpinBox, PushButton
@@ -9,11 +8,17 @@ from magicgui.widgets._bases import CategoricalWidget
 from magicgui.widgets._bases.value_widget import UNSET
 import napari
 
+from ._utils import find_viewer_ancestor
 from ._mouse import Mode, MouseInteractivityMixin
 from ._typing import MouseEvent
 
+if TYPE_CHECKING:
+    from napari.layers import Labels
 
-def _get_labels_layer(w: CategoricalWidget):
+
+def _get_labels_layer(w: CategoricalWidget) -> list[Labels]:
+    from napari.layers import Labels
+
     if viewer := find_viewer_ancestor(w.native):
         return [x for x in viewer.layers if isinstance(x, Labels)]
     return []

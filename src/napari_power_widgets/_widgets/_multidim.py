@@ -2,9 +2,11 @@ from __future__ import annotations
 
 from typing import Tuple
 from enum import Enum
-from napari.utils._magicgui import find_viewer_ancestor
+
 from magicgui.widgets import TupleEdit, SpinBox
 from magicgui.widgets._bases.value_widget import UNSET
+
+from ._utils import find_viewer_ancestor
 from ._buttoned import ButtonedValueWidget
 
 

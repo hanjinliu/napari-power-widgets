@@ -5,7 +5,7 @@ from magicgui import application as app
 from magicgui.widgets import Container, ComboBox, Label, Widget
 from magicgui.widgets._bases.value_widget import UNSET
 
-from napari.utils._magicgui import find_viewer_ancestor
+from ._utils import find_viewer_ancestor
 
 if TYPE_CHECKING:
     import pandas as pd

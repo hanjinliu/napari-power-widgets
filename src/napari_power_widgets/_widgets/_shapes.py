@@ -1,16 +1,22 @@
 from __future__ import annotations
-from typing import Sequence
 
+from typing import Sequence, TYPE_CHECKING
 import weakref
-from napari.layers import Shapes
-from napari.utils._magicgui import find_viewer_ancestor
+
 import numpy as np
 from magicgui.widgets import Container, ComboBox, Select
 from magicgui.widgets._bases import CategoricalWidget
 from magicgui.widgets._bases.value_widget import UNSET
 
+from ._utils import find_viewer_ancestor
+
+if TYPE_CHECKING:
+    from napari.layers import Shapes
+
 
 def _get_shapes_layer(w: CategoricalWidget):
+    from napari.layers import Shapes
+
     if viewer := find_viewer_ancestor(w.native):
         return [x for x in viewer.layers if isinstance(x, Shapes)]
     return []
@@ -109,7 +115,7 @@ class ShapeSelect(ShapeComboBox):
         if len(indices) != 1:
             return
         idx = indices[0]
-        layer: Shapes = self._layer_cbox.value
+        layer = self.shapes_layer
         layer.selected_data = {idx}
         data: np.ndarray = layer.data[idx]
         ndim = data.shape[1]
