@@ -1,19 +1,25 @@
-from typing import NewType, Tuple, Any, TYPE_CHECKING
+from typing import NewType, Tuple, List, Any, TYPE_CHECKING
 
 import numpy as np
 from magicgui import register_type
 
 from . import _widgets as wdt
 
-__all__ = ["BoxSelection", "FeatureColumn", "ShapeType", "Coordinate"]
+__all__ = [
+    "BoxSelection",
+    "FeatureColumn",
+    "ShapeOf",
+    "ShapesOf",
+    "Coordinate",
+    "ZStep",
+    "ZRange",
+]
 
 if TYPE_CHECKING:
     import pandas as pd
 
-    _DataFrame = pd.DataFrame
     _Series = pd.Series
 else:
-    _DataFrame = NewType("_DataFrame", Any)
     _Series = NewType("_Series", Any)
 
 # fmt: off
@@ -78,8 +84,8 @@ Examples
 register_type(FeatureColumn, widget_type=wdt.ColumnChoice)
 
 
-class ShapeType:
-    """Avaliable annotations for one of the layer's shape types."""
+class ShapeOf:
+    """Avaliable annotations for one of the layer's shapes."""
 
     __fields__ = ("Any", "Line", "Polygon", "Rectangle", "Ellipse", "Path")  # noqa
 
@@ -91,27 +97,50 @@ class ShapeType:
     Path = NewType("Path", np.ndarray)
 
 
-for name in ShapeType.__fields__:
-    _type = getattr(ShapeType, name)
-    _type.__doc__ = f"""
-    Alias of numpy.ndarray for a {name.title()!r} shape data.
+class ShapesOf(ShapeOf):
+    """Avaliable annotations for some of the layer's shapes."""
 
-    Examples
-    --------
-    >>> from napari_power_widgets.types import ShapeType
-    >>> from magicgui import magicgui
-    >>> # create a magicgui widget
-    >>> @magicgui
-    >>> def print_shape_coordinates(shape: ShapeType.{name}):
-    >>>     print(shape)
-    """
+    Any = NewType("Any", List[np.ndarray])
+    Line = NewType("Line", List[np.ndarray])
+    Ellipse = NewType("Ellipse", List[np.ndarray])
+    Rectangle = NewType("Rectangle", List[np.ndarray])
+    Polygon = NewType("Polygon", List[np.ndarray])
+    Path = NewType("Path", List[np.ndarray])
 
-register_type(ShapeType.Any, widget_type=wdt.ShapeComboBox)
-register_type(ShapeType.Line, widget_type=wdt.ShapeComboBox, options={"filter": "line"})  # noqa
-register_type(ShapeType.Ellipse, widget_type=wdt.ShapeComboBox, options={"filter": "ellipse"})  # noqa
-register_type(ShapeType.Rectangle, widget_type=wdt.ShapeComboBox, options={"filter": "rectangle"})  # noqa
-register_type(ShapeType.Polygon, widget_type=wdt.ShapeComboBox, options={"filter": "polygon"})  # noqa
-register_type(ShapeType.Path, widget_type=wdt.ShapeComboBox, options={"filter": "path"})  # noqa
+
+_TEMPLATE = """
+Alias of a list of numpy.ndarray for {name!r} shape data.
+
+Examples
+--------
+>>> from napari_power_widgets.types import {type_name}
+>>> from magicgui import magicgui
+>>> # create a magicgui widget
+>>> @magicgui
+>>> def print_shape_coordinates(shape: {type_name}.{name}):
+>>>     print(shape)
+"""
+
+for name in ShapeOf.__fields__:
+    _type = getattr(ShapesOf, name)
+    _type.__doc__ = _TEMPLATE.format(name=name, type_name=_type.__name__)
+
+    _type = getattr(ShapesOf, name)
+    _type.__doc__ = _TEMPLATE.format(name=name, type_name=_type.__name__)
+
+register_type(ShapeOf.Any, widget_type=wdt.ShapeComboBox)
+register_type(ShapeOf.Line, widget_type=wdt.ShapeComboBox, filter="line")  # noqa
+register_type(ShapeOf.Ellipse, widget_type=wdt.ShapeComboBox, filter="ellipse")  # noqa
+register_type(ShapeOf.Rectangle, widget_type=wdt.ShapeComboBox, filter="rectangle")  # noqa
+register_type(ShapeOf.Polygon, widget_type=wdt.ShapeComboBox, filter="polygon")  # noqa
+register_type(ShapeOf.Path, widget_type=wdt.ShapeComboBox, filter="path")  # noqa
+
+register_type(ShapesOf.Any, widget_type=wdt.ShapeSelect)
+register_type(ShapesOf.Line, widget_type=wdt.ShapeSelect, filter="line")  # noqa
+register_type(ShapesOf.Ellipse, widget_type=wdt.ShapeSelect, filter="ellipse")  # noqa
+register_type(ShapesOf.Rectangle, widget_type=wdt.ShapeSelect, filter="rectangle")  # noqa
+register_type(ShapesOf.Polygon, widget_type=wdt.ShapeSelect, filter="polygon")  # noqa
+register_type(ShapesOf.Path, widget_type=wdt.ShapeSelect, filter="path")  # noqa
 
 Coordinate = NewType("Coordinate", np.ndarray)
 Coordinate.__doc__ = """
@@ -130,7 +159,40 @@ Examples
 register_type(Coordinate, widget_type=wdt.CoordinateSelector)
 
 ZStep = NewType("ZStep", int)
+ZStep.__doc__ = """
+Alias of int for z-step of the viewer.
+
+Examples
+--------
+>>> from napari_power_widgets.types import ZStep
+>>> from napari.layers import Image
+>>> from magicgui import magicgui
+>>>
+>>> @magicgui
+>>> def get_slice(img: Image, z: ZStep) -> Image:
+>>>     return Image(img.data[z], name=f"{img.name} (z={z})")
+"""
 register_type(ZStep, widget_type=wdt.ZStepSpinBox)
 
 ZRange = NewType("ZRange", Tuple[int, int])
+ZRange.__doc__ = """
+Alias of (int, int) for an **inclusive** range of z-step.
+
+By default, the first value is smaller than the second value. If you
+want to disable the order check, use `ordered=False` in magicgui
+configuration for this parameter.
+
+Examples
+--------
+>>> from napari_power_widgets.types import ZRange
+>>> from napari.layers import Image
+>>> from magicgui import magicgui
+>>>
+>>> @magicgui
+>>> def get_clipped(img: Image, zrange: ZRange) -> Image:
+>>>     zmin, zmax = zrange
+>>>     return Image(img.data[zmin:zmax+1])
+"""
 register_type(ZRange, widget_type=wdt.ZRangeEdit)
+
+del NewType, Tuple, List, Any, TYPE_CHECKING, np, register_type, wdt

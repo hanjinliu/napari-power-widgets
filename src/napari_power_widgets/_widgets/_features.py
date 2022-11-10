@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 from magicgui import application as app
 from magicgui.widgets import Container, ComboBox, Label, Widget
-from magicgui.widgets._bases import CategoricalWidget
+from magicgui.widgets._bases.value_widget import UNSET
 
 from napari.utils._magicgui import find_viewer_ancestor
 
@@ -11,7 +11,7 @@ if TYPE_CHECKING:
     import pandas as pd
 
 
-def get_features(widget: CategoricalWidget) -> list[tuple[str, pd.DataFrame]]:
+def get_features(widget: Widget) -> list[tuple[str, pd.DataFrame]]:
     """Get all the non-empty feature data from the viewer."""
     viewer = find_viewer_ancestor(widget)
     if viewer is None:
@@ -26,7 +26,8 @@ def get_features(widget: CategoricalWidget) -> list[tuple[str, pd.DataFrame]]:
 class ColumnChoice(Container):
     def __init__(
         self,
-        value=None,
+        value=UNSET,
+        nullable=False,
         **kwargs,
     ):
         self._dataframe_cbox = ComboBox(choices=get_features, value=value)
@@ -46,7 +47,7 @@ class ColumnChoice(Container):
                 _label_r,
             ],
             labels=False,
-            name=kwargs.get("name"),
+            name=kwargs.pop("name", None),
             **kwargs,
         )
         self.margins = (0, 0, 0, 0)

@@ -1,10 +1,11 @@
 from __future__ import annotations
+from typing import Sequence
 
 import weakref
 from napari.layers import Shapes
 from napari.utils._magicgui import find_viewer_ancestor
 import numpy as np
-from magicgui.widgets import Container, ComboBox
+from magicgui.widgets import Container, ComboBox, Select
 from magicgui.widgets._bases import CategoricalWidget
 from magicgui.widgets._bases.value_widget import UNSET
 
@@ -16,6 +17,8 @@ def _get_shapes_layer(w: CategoricalWidget):
 
 
 class ShapeComboBox(Container):
+    _shape_selection_widget_cls = ComboBox
+
     def __init__(
         self,
         value=UNSET,
@@ -27,7 +30,7 @@ class ShapeComboBox(Container):
             filter = ["line", "polygon", "rectangle", "ellipse", "path"]
         self._filter = filter
         self._layer_cbox = ComboBox(choices=_get_shapes_layer, nullable=False)
-        self._shape_cbox = ComboBox(
+        self._shape_cbox = self._shape_selection_widget_cls(
             choices=self._get_available_shape_id, nullable=False
         )
         super().__init__(
@@ -43,8 +46,7 @@ class ShapeComboBox(Container):
 
     @property
     def value(self) -> np.ndarray:
-        layer: Shapes = self._layer_cbox.value
-        return layer.data[self._shape_cbox.value]
+        return self.shapes_layer.data[self._shape_cbox.value]
 
     @value.setter
     def value(self, shape: tuple[Shapes, int]):
@@ -52,6 +54,11 @@ class ShapeComboBox(Container):
             return
         self._layer_cbox.value = shape[0]
         self._shape_cbox.value = shape[1]
+
+    @property
+    def shapes_layer(self) -> Shapes:
+        """Currently selected shapes layer."""
+        return self._layer_cbox.value
 
     def _get_event_connected_layer(self) -> Shapes | None:
         if self._event_connected_layer is None:
@@ -62,7 +69,7 @@ class ShapeComboBox(Container):
         return type in self._filter
 
     def _get_available_shape_id(self, w: CategoricalWidget):
-        layer: Shapes = self._layer_cbox.value
+        layer = self.shapes_layer
         if layer is None:
             return []
         return [
@@ -72,7 +79,7 @@ class ShapeComboBox(Container):
         ]
 
     def _focus_on_selected_shape(self, idx: int):
-        layer: Shapes = self._layer_cbox.value
+        layer = self.shapes_layer
         layer.selected_data = {idx}
         data: np.ndarray = layer.data[idx]
         ndim = data.shape[1]
@@ -93,3 +100,20 @@ class ShapeComboBox(Container):
         self._event_connected_layer = weakref.ref(layer)
         layer.events.data.connect(self._shape_cbox.reset_choices)
         return None
+
+
+class ShapeSelect(ShapeComboBox):
+    _shape_selection_widget_cls = Select
+
+    def _focus_on_selected_shape(self, indices: Sequence[int]):
+        if len(indices) != 1:
+            return
+        idx = indices[0]
+        layer: Shapes = self._layer_cbox.value
+        layer.selected_data = {idx}
+        data: np.ndarray = layer.data[idx]
+        ndim = data.shape[1]
+        if ndim > 2:
+            center = np.mean(data[:, :-2], axis=0)
+            viewer = find_viewer_ancestor(self)
+            viewer.dims.set_current_step(range(ndim - 2), center[0])
