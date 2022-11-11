@@ -32,6 +32,8 @@ class ZStepSpinBox(ButtonedValueWidget):
 
 
 class TrackMode(Enum):
+    """Mode of dimension slider tracking."""
+
     idle = "idle"
     tracking = "tracking"
 
@@ -75,6 +77,7 @@ class ZRangeEdit(ButtonedValueWidget):
 
     @property
     def mode(self) -> TrackMode:
+        """Current tracking mode."""
         return self._mode
 
     @mode.setter

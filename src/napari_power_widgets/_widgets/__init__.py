@@ -1,6 +1,7 @@
 from ._coordinate import BoxSelector, CoordinateSelector
 from ._features import ColumnChoice
 from ._shapes import ShapeComboBox, ShapeSelect
+from ._labels import LabelComboBox
 from ._temp_shape import (
     LineDataEdit,
     PolygonDataEdit,
@@ -15,6 +16,7 @@ __all__ = [
     "ColumnChoice",
     "ShapeComboBox",
     "ShapeSelect",
+    "LabelComboBox",
     "CoordinateSelector",
     "LineDataEdit",
     "PolygonDataEdit",

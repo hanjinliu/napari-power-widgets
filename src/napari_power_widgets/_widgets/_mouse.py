@@ -50,16 +50,17 @@ class MouseInteractivityMixin:
         self.mode = self.mode.switched()
 
     def _freeze_layers(self, viewer: napari.Viewer):
-        from napari.layers import Shapes
+        from napari.layers import Shapes, Labels
 
         self._current_viewer = viewer
         self._layer_states: list[tuple[Layer, bool]] = []
         for layer in viewer.layers.selection:
             self._layer_states.append((layer, layer.interactive))
             layer.interactive = False
-            if isinstance(layer, Shapes):
+            if isinstance(layer, (Shapes, Labels)):
                 # Shapes layer interactivity cannot be disabled if the layer
                 # is in add_XXX mode.
+                # Labels layer painting mode etc. should be disabled.
                 layer.mode = "pan_zoom"
 
     def _unfreeze_layers(self):

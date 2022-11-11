@@ -137,6 +137,28 @@ register_type(SomeOfRectangles, widget_type=wdt.ShapeSelect, filter="rectangle")
 register_type(SomeOfPolygons, widget_type=wdt.ShapeSelect, filter="polygon")  # noqa
 register_type(SomeOfPaths, widget_type=wdt.ShapeSelect, filter="path")  # noqa
 
+OneOfLabels = NewType("OneOfLabels", np.ndarray)
+OneOfLabels.__doc__ = """
+Alias of a boolean numpy.ndarray for a label data.
+
+Label data 0 is considered as the background. If you want to use it,
+set the configuration by `@magicgui(x={"include_zero": True})`
+
+Examples
+--------
+>>> from napari_power_widgets.types import OneOfLabels
+>>> from napari.types import ImageData
+>>> from magicgui import magicgui
+>>>
+>>> @magicgui
+>>> def extract(image: ImageData, label: OneOfLabels) -> ImageData:
+>>>     out = image.copy()
+>>>     out[~label] = 0
+>>>     return out
+"""
+
+register_type(OneOfLabels, widget_type=wdt.LabelComboBox)
+
 Coordinate = NewType("Coordinate", np.ndarray)
 Coordinate.__doc__ = """
 Alias of numpy.ndarray of shape (2,) for a physical point coordinate.
@@ -174,8 +196,8 @@ ZRange.__doc__ = """
 Alias of (int, int) for an **inclusive** range of z-step.
 
 By default, the first value is smaller than the second value. If you
-want to disable the order check, use `ordered=False` in magicgui
-configuration for this parameter.
+want to disable the order check, configure it by
+`@magicgui(x={"ordered": False})`.
 
 Examples
 --------

@@ -15,6 +15,7 @@ from ._mouse import MouseInteractivityMixin, Mode
 from ._typing import MouseEvent
 
 if TYPE_CHECKING:
+    from numpy.typing import ArrayLike
     from napari.layers import Shapes
 
 
@@ -60,7 +61,7 @@ class _ShapeDataEdit(ButtonedValueWidget, MouseInteractivityMixin):
         self._layer = viewer.add_shapes(
             ndim=2,
             face_color=[0, 0, 0, 0],
-            edge_color=[0, 0.6, 1, 1],
+            edge_color=[0, 0.6, 1, 1],  # same as napari interaction box
             opacity=1.0,
             edge_width=1.0,
             name="Temporal Layer",
@@ -125,7 +126,7 @@ class LineDataEdit(_ShapeDataEdit):
     def _init_data(self) -> np.ndarray:
         return np.zeros((2, 2), dtype=np.float64)
 
-    def _validate_data(self, value: Any) -> np.ndarray:
+    def _validate_data(self, value: ArrayLike) -> np.ndarray:
         value = np.asarray(value, dtype=np.float64)
         if value.shape != (2, 2):
             raise ValueError("Line data must be (2, 2) array")
@@ -138,7 +139,7 @@ class PathDataEdit(_ShapeDataEdit):
     def _init_data(self) -> np.ndarray:
         return np.zeros((1, 2), dtype=np.float64)
 
-    def _validate_data(self, value: Any) -> np.ndarray:
+    def _validate_data(self, value: ArrayLike) -> np.ndarray:
         value = np.asarray(value, dtype=np.float64)
         if value.ndim != 2 or value.shape[1] != 2:
             raise ValueError("Line data must be (N, 2) array")
@@ -151,17 +152,20 @@ class RectangleDataEdit(_ShapeDataEdit):
     def _init_data(self) -> np.ndarray:
         return np.zeros((4, 2), dtype=np.float64)
 
-    def _validate_data(self, value: Any) -> np.ndarray:
+    def _validate_data(self, value: ArrayLike) -> np.ndarray:
         value = np.asarray(value, dtype=np.float64)
         if value.shape != (4, 2):
             raise ValueError("Line data must be (N, 2) array")
         return value
 
 
-class PolygonDataEdit(PathDataEdit):
+class PolygonDataEdit(_ShapeDataEdit):
     SHAPE_MODE = "ADD_POLYGON"
 
-    def _validate_data(self, value: Any) -> np.ndarray:
+    def _init_data(self) -> np.ndarray:
+        return np.zeros((1, 2), dtype=np.float64)
+
+    def _validate_data(self, value: ArrayLike) -> np.ndarray:
         value = np.asarray(value, dtype=np.float64)
         if value.shape != (4, 2):
             raise ValueError("Line data must be (N, 2) array")
@@ -174,7 +178,7 @@ class EllipseDataEdit(_ShapeDataEdit):
     def _init_data(self) -> np.ndarray:
         return np.zeros((4, 2), dtype=np.float64)
 
-    def _validate_data(self, value: Any) -> np.ndarray:
+    def _validate_data(self, value: ArrayLike) -> np.ndarray:
         value = np.asarray(value, dtype=np.float64)
         if value.shape != (4, 2):
             raise ValueError("Line data must be (N, 2) array")

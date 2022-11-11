@@ -1,11 +1,10 @@
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
-from magicgui import application as app
 from magicgui.widgets import Container, ComboBox, Label, Widget
 from magicgui.widgets._bases.value_widget import UNSET
 
-from ._utils import find_viewer_ancestor
+from ._utils import find_viewer_ancestor, minimize_label_width
 
 if TYPE_CHECKING:
     import pandas as pd
@@ -32,11 +31,10 @@ class ColumnChoice(Container):
     ):
         self._dataframe_cbox = ComboBox(choices=get_features, value=value)
         self._column_cbox = ComboBox(choices=self._get_available_columns)
-        _measure = app.use_app().get_obj("get_text_width")
         _label_l = Label(value='.features["')
-        _label_l.max_width = _measure(_label_l.value)
+        minimize_label_width(_label_l)
         _label_r = Label(value='"]')
-        _label_r.max_width = _measure(_label_r.value)
+        minimize_label_width(_label_r)
 
         super().__init__(
             layout="horizontal",
