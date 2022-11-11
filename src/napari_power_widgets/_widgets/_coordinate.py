@@ -78,14 +78,14 @@ class BoxSelector(Container, MouseInteractivityMixin):
                 raise ValueError("X slice must have a stop value")
             xval = (x0, x1)
 
-        if self._ordered:
+        if self.ordered:
             yval = sorted(yval)
             xval = sorted(xval)
         self._yrange.value = yval
         self._xrange.value = xval
 
     def _activate(self):
-        self._btn.text = "..."
+        self._btn.text = "Selecting"
         viewer = napari.current_viewer()
         self._freeze_layers(viewer)
         viewer.overlays.interaction_box.points = None
@@ -98,10 +98,8 @@ class BoxSelector(Container, MouseInteractivityMixin):
 
         # update values
         points = viewer.overlays.interaction_box.points
-        self.value = (
-            (points[0, 0], points[1, 0]),
-            (points[0, 1], points[1, 1]),
-        )
+        if points is not None:
+            self.value = points.T
         viewer.cursor.style = "standard"
         viewer.mouse_drag_callbacks.remove(self._on_drag)
         self._unfreeze_layers()
@@ -115,11 +113,8 @@ class BoxSelector(Container, MouseInteractivityMixin):
             while event.type == "mouse_move":
                 pos1 = event.position
                 points = np.stack([pos0, pos1], axis=0)
-                viewer.overlays.interaction_box.points = points
-                self.value = (
-                    (points[0, 0], points[1, 0]),
-                    (points[0, 1], points[1, 1]),
-                )
+                viewer.overlays.interaction_box.points = points[:, -2:]
+                self.value = viewer.overlays.interaction_box.points.T
                 yield
         finally:
             self.mode = Mode.idle
@@ -278,7 +273,7 @@ class CoordinateSelector(Container, MouseInteractivityMixin):
                 yield  # do nothing
             px1 = event.pos
             if np.sum(px0 - px1) < 2:
-                self.value = pos0
+                self.value = pos0[-2:]
                 viewer.overlays.interaction_box.show = True
                 viewer.overlays.interaction_box.points = pos0
             else:
