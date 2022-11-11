@@ -112,9 +112,9 @@ class ShapeSelect(ShapeComboBox):
     _shape_selection_widget_cls = Select
 
     def _focus_on_selected_shape(self, indices: Sequence[int]):
-        if len(indices) != 1:
+        if len(indices) < 1:
             return
-        idx = indices[0]
+        idx = indices[-1]
         layer = self.shapes_layer
         layer.selected_data = {idx}
         data: np.ndarray = layer.data[idx]
