@@ -28,6 +28,7 @@ class _ShapeDataEdit(ButtonedValueWidget, MouseInteractivityMixin):
             value=self._table_data, columns=["Y", "X"], name="data"
         )
         data_table.min_height = 30
+        data_table.max_height = 120
         data_table.read_only = True
         self._table = data_table
         super().__init__(data_table, text="Draw", **kwargs)
