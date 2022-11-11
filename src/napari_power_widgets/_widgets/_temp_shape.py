@@ -53,7 +53,7 @@ class _ShapeDataEdit(ButtonedValueWidget, MouseInteractivityMixin):
             return
         value = self._validate_data(value)
         self._table_data = value
-        self._table.value = value
+        self._table.data = value
 
     def _activate(self):
         self._btn.text = "Drawing"

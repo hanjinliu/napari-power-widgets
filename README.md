@@ -7,13 +7,81 @@
 [![codecov](https://codecov.io/gh/hanjinliu/napari-power-widgets/branch/main/graph/badge.svg)](https://codecov.io/gh/hanjinliu/napari-power-widgets)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-power-widgets)](https://napari-hub.org/plugins/napari-power-widgets)
 
-Powerful `magicgui` widgets and type annotations for napari plugin widgets.
+Powerful `magicgui` widgets and type annotations for general napari plugin development.
 
-### Widgets
+`napari-power-widgets` makes the full use of type-to-widget mapping strategy of `magicgui` to provide napari-specific types and value-widgets, which will be very useful to improve UI/UX of your napari plugins with simple codes.
 
-##### BoxSelector
+Currently, `napari-power-widgets` does not provide any reader, writer or widget. It is supposed to be used programmatically.
+
+### Examples
+
+Some types/widgets and the possible usage are picked up here ([&rarr; check all](https://github.com/hanjinliu/napari-power-widgets/blob/main/src/napari_power_widgets/types.py)). If you have any neat ideas, please open an issue.
+
+#### 1. `BoxSelection`
+Alias of a four-float tuple for 2D selection. You can set the value by drawing a interaction box in the viewer.
+*usage: image cropper, rectangular labeling etc.*
+
+```python
+@magicgui
+def f(box: BoxSelection):
+    print(box)
+viewer.window.add_dock_widget(f)
+```
+
+![](images/BoxSelection.gif)
+
+#### 2. `OneOfRectangles`
+Alias of `np.ndarray` for one of rectangles in a `Shapes` layer.
+*usage: image cropper, rectangular labeling etc.*
+
+```python
+@magicgui
+def f(rect: OneOfRectangles):
+    print(rect)
+viewer.window.add_dock_widget(f)
+```
+
+![](images/OneOfRectangles.gif)
+
+#### 3. `LineData`
+Alias of `np.ndarray` for a line data. You can obtain the data by manually drawing a line in the viewer.
+*usage: line profiling, kymograph etc.*
+
+```python
+@magicgui
+def f(line: LineData):
+    print(line)
+viewer.window.add_dock_widget(f)
+```
+
+![](images/LineData.gif)
+
+#### 4. `OneOfLabels`
+Alias of boolean `np.ndarray` for a labeled region. You can choose ones by directly clicking the viewer.
+*usage: image masking, feature measurement etc.*
+
+```python
+@magicgui
+def f(label: OneOfLabels):
+    pass
+viewer.window.add_dock_widget(f)
+```
+
+![](images/OneOfLabels.gif)
 
 
+#### 5. `ZRange`
+Alias of a tuple of float that represents the limit of the third dimension. You can select the values by moving the dimension slider.
+*usage: movie trimming, partial image projection etc.*
+
+```python
+@magicgui
+def f(zrange: ZRange):
+    print(zrange)
+viewer.window.add_dock_widget(f)
+```
+
+![](images/ZRange.gif)
 
 ----------------------------------
 

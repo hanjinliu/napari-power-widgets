@@ -95,7 +95,6 @@ class ShapeComboBox(Container):
             viewer.dims.set_current_step(range(ndim - 2), center[0])
 
     def _layer_changed(self, layer: Shapes):
-        self._shape_cbox.reset_choices()
         if old_layer := self._get_event_connected_layer():
             try:
                 old_layer.events.data.disconnect(
@@ -105,6 +104,7 @@ class ShapeComboBox(Container):
                 pass
         self._event_connected_layer = weakref.ref(layer)
         layer.events.data.connect(self._shape_cbox.reset_choices)
+        self._shape_cbox.reset_choices()
         return None
 
 
