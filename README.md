@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/hanjinliu/napari-power-widgets/branch/main/graph/badge.svg)](https://codecov.io/gh/hanjinliu/napari-power-widgets)
 [![napari hub](https://img.shields.io/endpoint?url=https://api.napari-hub.org/shields/napari-power-widgets)](https://napari-hub.org/plugins/napari-power-widgets)
 
-Powerful `magicgui` widgets and type annotations for general napari plugin development.
+Powerful `magicgui` widgets and type annotations for general-purpose napari plugin development.
 
 `napari-power-widgets` makes the full use of type-to-widget mapping strategy of `magicgui` to provide napari-specific types and value-widgets, which will be very useful to improve UI/UX of your napari plugins with simple codes.
 

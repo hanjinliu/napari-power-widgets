@@ -12,6 +12,32 @@ if TYPE_CHECKING:
 else:
     _Series = Any
 
+__all__ = [
+    "BoxSelection",
+    "FeatureColumn",
+    "OneOfShapes",
+    "OneOfLines",
+    "OneOfEllipses",
+    "OneOfRectangles",
+    "OneOfPolygons",
+    "OneOfPaths",
+    "SomeOfShapes",
+    "SomeOfLines",
+    "SomeOfEllipses",
+    "SomeOfRectangles",
+    "SomeOfPolygons",
+    "SomeOfPaths",
+    "OneOfLabels",
+    "Coordinate",
+    "ZStep",
+    "ZRange",
+    "LineData",
+    "RectangleData",
+    "PathData",
+    "PolygonData",
+    "EllipseData",
+]
+
 # fmt: off
 BoxSelection = NewType("BoxSelection", Tuple[Tuple[float, float], Tuple[float, float]])  # noqa
 BoxSelection.__doc__ = """
@@ -216,11 +242,13 @@ LineData = NewType("LineData", np.ndarray)
 RectangleData = NewType("RectangleData", np.ndarray)
 PathData = NewType("PathData", np.ndarray)
 PolygonData = NewType("PolygonData", np.ndarray)
+EllipseData = NewType("EllipseData", np.ndarray)
 
 register_type(LineData, widget_type=wdt.LineDataEdit)
 register_type(RectangleData, widget_type=wdt.RectangleDataEdit)
 register_type(PathData, widget_type=wdt.PathDataEdit)
 register_type(PolygonData, widget_type=wdt.PolygonDataEdit)
+register_type(EllipseData, widget_type=wdt.EllipseDataEdit)
 
 # delete all the variables that are not needed
 del NewType, Tuple, List, Any, TYPE_CHECKING, np, register_type, wdt
