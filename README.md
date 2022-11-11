@@ -18,8 +18,10 @@ Currently, `napari-power-widgets` does not provide any reader, writer or widget.
 Some types/widgets and the possible usage are picked up here ([&rarr; check all](https://github.com/hanjinliu/napari-power-widgets/blob/main/src/napari_power_widgets/types.py)). If you have any neat ideas, please open an issue.
 
 #### 1. `BoxSelection`
+
 Alias of a four-float tuple for 2D selection. You can set the value by drawing a interaction box in the viewer.
-*usage: image cropper, rectangular labeling etc.*
+
+*e. g. : image cropper, rectangular labeling etc.*
 
 ```python
 @magicgui
@@ -31,8 +33,10 @@ viewer.window.add_dock_widget(f)
 ![](images/BoxSelection.gif)
 
 #### 2. `OneOfRectangles`
+
 Alias of `np.ndarray` for one of rectangles in a `Shapes` layer.
-*usage: image cropper, rectangular labeling etc.*
+
+*e. g. : image cropper, rectangular labeling etc.*
 
 ```python
 @magicgui
@@ -44,8 +48,10 @@ viewer.window.add_dock_widget(f)
 ![](images/OneOfRectangles.gif)
 
 #### 3. `LineData`
+
 Alias of `np.ndarray` for a line data. You can obtain the data by manually drawing a line in the viewer.
-*usage: line profiling, kymograph etc.*
+
+*e. g. : line profiling, kymograph etc.*
 
 ```python
 @magicgui
@@ -57,8 +63,10 @@ viewer.window.add_dock_widget(f)
 ![](images/LineData.gif)
 
 #### 4. `OneOfLabels`
+
 Alias of boolean `np.ndarray` for a labeled region. You can choose ones by directly clicking the viewer.
-*usage: image masking, feature measurement etc.*
+
+*e. g. : image masking, feature measurement etc.*
 
 ```python
 @magicgui
@@ -71,8 +79,10 @@ viewer.window.add_dock_widget(f)
 
 
 #### 5. `ZRange`
+
 Alias of a tuple of float that represents the limit of the third dimension. You can select the values by moving the dimension slider.
-*usage: movie trimming, partial image projection etc.*
+
+*e. g. : movie trimming, partial image projection etc.*
 
 ```python
 @magicgui
